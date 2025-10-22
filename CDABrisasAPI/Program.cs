@@ -1,0 +1,111 @@
+﻿using Application.Abstractions;
+using Application.Abstractions.Interfaces.CommandHandler;
+using Application.Abstractions.Interfaces.Dispatchers;
+using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
+using Application.Abstractions.Interfaces.QueryHandler;
+using Application.Messages.CommandHandler;
+using Application.Messages.Commands;
+using Application.Messages.Queries;
+using Application.Messages.QueryHandler;
+using Application.SystemUsers.CommandHandler;
+using Application.SystemUsers.Commands;
+using Application.SystemUsers.Queries;
+using Application.SystemUsers.QueryHandler;
+using Application.Users.CommandHandler;
+using Application.Users.Commands;
+using Application.Users.Queries;
+using Application.Users.QueryHandler;
+using Application.Utilities;
+using Application.Utilities.Interfaces;
+using DataAccess;
+using DataAccess.Repository;
+using Domain.Dto;
+using Domain.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
+// ✅ Configuración de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "allowCors",
+        corsBuilder =>
+        {
+            corsBuilder
+                .WithOrigins("https://localhost:7124", "http://localhost:4200") // 👈 Puedes agregar más orígenes si usas Angular
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
+
+
+builder.Services.AddDbContext<CDABrisasDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<MetaSettings>(builder.Configuration.GetSection("Meta"));
+
+builder.Services.AddScoped<IDispatcher, Dispatcher>();
+
+// WS Users
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IQueryHandler<GetAllUsersWithMessagesQuery, IEnumerable<User>>, GetAllUsersWithMessagesHandler>();
+builder.Services.AddScoped<ICommandHandler<CreateUserCommand, User>, CreateUserCommandHandler>();
+
+// Messages
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<ICommandHandler<CreateMessageCommand, Message>, CreateMessageCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetAllMessagesQuery, IEnumerable<Message>>, GetAllMessagesHandler>();
+
+// Webhook
+builder.Services.AddScoped<IWhatsAppWebhookParser, WhatsAppWebhookParser>();
+
+// System User
+builder.Services.AddScoped<ISystemUserRepository, SystemUserRepository>();
+builder.Services.AddScoped<IQueryHandler<GetSystemUserByUserNameQuery, SystemUser>, GetSystemUserByUserNameHandler>();
+builder.Services.AddScoped<ICommandHandler<CreateSystemUserCommand, SystemUser>, CreateSystemUserHandler>();
+builder.Services.AddScoped<ICommandHandler<SendReferralListCommand, Message>, SendReferralListHandler>();
+
+//builder.Services.AddControllers()
+//    .AddJsonOptions(options =>
+//    {
+//        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+//        options.JsonSerializerOptions.WriteIndented = true;
+//    });
+
+var app = builder.Build();
+
+app.UseStaticFiles();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+// ✅ Activa CORS ANTES de Authorization
+app.UseCors("allowCors");
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

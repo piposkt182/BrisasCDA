@@ -1,0 +1,10 @@
+﻿using Domain.Models;
+
+namespace Application.Abstractions
+{
+    public interface IUserRepository
+    {
+        Task<IEnumerable<User>> GetAllUsersWithMessages();
+        Task<User> CreateUser(User user);
+    }
+}
