@@ -29,7 +29,7 @@ namespace Application.Utilities
             if (webhookEvent?.Entry?[0]?.Changes?[0]?.Value?.Messages?[0].Type == "text")
             {
                 text = webhookEvent?.Entry?[0]?.Changes?[0]?.Value?.Messages?[0]?.Text?.Body;
-                if (wsId == "573012282168" && text!.Contains("referidos pendientes"))
+                if (wsId == "573012282168" && text!.Contains("Referidos pendientes"))
                     typeMessage = 3;
                 else
                     typeMessage = 1;

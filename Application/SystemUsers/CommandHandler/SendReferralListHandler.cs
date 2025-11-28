@@ -27,6 +27,7 @@ namespace Application.SystemUsers.CommandHandler
         {
             var messageBody = GetAllMessages().Result;
             await SendWhatsAppTextMessageAsync(query.ToNumber, messageBody);
+            //await SendWhatsAppTemplateMessageAsync(query.ToNumber);
             return new Message
             {
                 Text = $"✅ Plantilla enviada al número {query.ToNumber}",
@@ -52,61 +53,126 @@ namespace Application.SystemUsers.CommandHandler
 
         public async Task SendWhatsAppTextMessageAsync(string toNumber, string message)
         {
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-
-            var body = new
+            try
             {
-                messaging_product = "whatsapp",
-                to = toNumber,
-                type = "text",
-                text = new
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+                //var body = new
+                //{
+                //    messaging_product = "whatsapp",
+                //    to = toNumber,
+                //    type = "template",
+                //    template = new
+                //    {
+                //        name = "hello_world",
+                //        language = new
+                //        {
+                //            code = "en_US"
+                //        }
+                //    }
+                //};
+
+                var body = new
                 {
-                    body = message
+                    messaging_product = "whatsapp",
+                    to = toNumber,
+                    type = "text",
+                    text = new
+                    {
+                        body = message
+                    }
+                };
+
+                var jsonBody = JsonSerializer.Serialize(body);
+                var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(MetaApiUrl, content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"❌ Error HTTP {response.StatusCode}");
+                    throw new InvalidOperationException($"Error al enviar mensaje a WhatsApp ({toNumber}). Detalle: {responseContent}");
                 }
-            };
 
-            var jsonBody = JsonSerializer.Serialize(body);
-            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-            var response = await client.PostAsync(MetaApiUrl, content);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"📩 Respuesta de Meta: {responseContent}");
-
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Errores de red o HTTP (por ejemplo: 400, 401, 403, 500)
+                Console.WriteLine($"❌ Error HTTP al enviar mensaje a {toNumber}: {ex.Message}");
+                throw new InvalidOperationException($"Error al enviar mensaje a WhatsApp ({toNumber}).", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                // Timeout o cancelación de la solicitud
+                Console.WriteLine($"⏰ Tiempo de espera agotado al enviar mensaje a {toNumber}: {ex.Message}");
+                throw new TimeoutException($"El envío del mensaje a {toNumber} excedió el tiempo de espera.", ex);
+            }
+            catch (Exception ex)
+            {
+                // Cualquier otro tipo de error inesperado
+                Console.WriteLine($"⚠️ Error inesperado al enviar mensaje a {toNumber}: {ex.Message}");
+                throw; // Re-lanza para que se maneje más arriba si es necesario
+            }
         }
 
-
-        public async Task SendWhatsAppTemplateMessageAsync(string toNumber)
+        public async Task SendWhatsAppTemplateMessageAsync(string toNumber, string message = "holaaaaaaaaaaaaaaa")
         {
-            var client = _httpClientFactory.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
-
-            var body = new
+            try
             {
-                messaging_product = "whatsapp",
-                to = toNumber,
-                type = "template",
-                template = new
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
+
+                var body = new
                 {
-                    name = "hello_world",
-                    language = new
+                    messaging_product = "whatsapp",
+                    to = toNumber,
+                    type = "template",
+                    template = new
                     {
-                        code = "en_US"
+                        name = "hello_world",
+                        language = new
+                        {
+                            code = "en_US"
+                        }
                     }
+                };
+                var jsonBody = JsonSerializer.Serialize(body);
+                var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(MetaApiUrl, content);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"📩 Respuesta de Meta: {responseContent}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"❌ Error HTTP {response.StatusCode}");
+                    throw new InvalidOperationException($"Error al enviar mensaje a WhatsApp ({toNumber}). Detalle: {responseContent}");
                 }
-            };
 
-            var jsonBody = JsonSerializer.Serialize(body);
-            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
-            // 📡 Hacer la petición POST
-            var response = await client.PostAsync(MetaApiUrl, content);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"📩 Respuesta de Meta: {responseContent}");
-
-            response.EnsureSuccessStatusCode();
+                //response.EnsureSuccessStatusCode();
+            }
+            catch (HttpRequestException ex)
+            {
+                // Errores de red o HTTP (por ejemplo: 400, 401, 403, 500)
+                Console.WriteLine($"❌ Error HTTP al enviar mensaje a {toNumber}: {ex.Message}");
+                throw new InvalidOperationException($"Error al enviar mensaje a WhatsApp ({toNumber}).", ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                // Timeout o cancelación de la solicitud
+                Console.WriteLine($"⏰ Tiempo de espera agotado al enviar mensaje a {toNumber}: {ex.Message}");
+                throw new TimeoutException($"El envío del mensaje a {toNumber} excedió el tiempo de espera.", ex);
+            }
+            catch (Exception ex)
+            {
+                // Cualquier otro tipo de error inesperado
+                Console.WriteLine($"⚠️ Error inesperado al enviar mensaje a {toNumber}: {ex.Message}");
+                throw; // Re-lanza para que se maneje más arriba si es necesario
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
+using Application.Messages.Commands;
 using Application.Messages.Queries;
 using Domain.Models;
 using Microsoft.AspNetCore.Cors;
@@ -26,6 +27,14 @@ namespace CDABrisasAPI.Controllers
         {
             var query = new GetAllMessagesQuery();
             var messages = await _dispatcher.SendQueryAsync<GetAllMessagesQuery, IEnumerable<Message>>(query);
+            return Ok(messages);
+        }
+
+        [HttpGet("SendWhatsAppTemplate")]
+        public async Task<IActionResult> SendWhatsAppTemplate(string subscriberId, string name, string code, string plate, string plateDate)
+        {
+            var command = new SendWhatsAppTemplateCommand(subscriberId, name, plate, plateDate);
+            var messages = await _dispatcher.SendCommandAsync<SendWhatsAppTemplateCommand, string>(command);
             return Ok(messages);
         }
     }

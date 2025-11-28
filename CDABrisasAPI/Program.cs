@@ -16,7 +16,9 @@ using Application.Users.Commands;
 using Application.Users.Queries;
 using Application.Users.QueryHandler;
 using Application.Utilities;
+using Application.Utilities.Dtos;
 using Application.Utilities.Interfaces;
+using CDABrisasAPI.Dto;
 using DataAccess;
 using DataAccess.Repository;
 using Domain.Dto;
@@ -71,6 +73,7 @@ builder.Services.AddScoped<ICommandHandler<CreateUserCommand, User>, CreateUserC
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICommandHandler<CreateMessageCommand, Message>, CreateMessageCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetAllMessagesQuery, IEnumerable<Message>>, GetAllMessagesHandler>();
+builder.Services.AddScoped<ICommandHandler<SendWhatsAppTemplateCommand, string>, SendWhatsAppTemplateHandler>();
 
 // Webhook
 builder.Services.AddScoped<IWhatsAppWebhookParser, WhatsAppWebhookParser>();
@@ -81,12 +84,8 @@ builder.Services.AddScoped<IQueryHandler<GetSystemUserByUserNameQuery, SystemUse
 builder.Services.AddScoped<ICommandHandler<CreateSystemUserCommand, SystemUser>, CreateSystemUserHandler>();
 builder.Services.AddScoped<ICommandHandler<SendReferralListCommand, Message>, SendReferralListHandler>();
 
-//builder.Services.AddControllers()
-//    .AddJsonOptions(options =>
-//    {
-//        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-//        options.JsonSerializerOptions.WriteIndented = true;
-//    });
+builder.Services.Configure<ManyChatOptions>(builder.Configuration.GetSection("ManyChat"));
+builder.Services.AddHttpClient<SendWhatsAppTemplateHandler>();
 
 var app = builder.Build();
 

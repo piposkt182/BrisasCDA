@@ -43,6 +43,7 @@ namespace CDABrisasAPI.Controllers
         [HttpPost]
         public async Task<IResult> ReceiveMessage([FromBody] object payload)
         {
+            User newUserId = new User();
             var contactInfo = _parser.ExtractContactInfo(payload.ToString());
             if (contactInfo == null)
                 return Results.BadRequest("No se pudieron obtener los datos del contacto.");
@@ -53,13 +54,14 @@ namespace CDABrisasAPI.Controllers
                 var querySystemUser = new SendReferralListCommand("573012282168");
                 var user = await _dispatcher.SendCommandAsync<SendReferralListCommand, Message>(querySystemUser);
             }
+            else
+            {
+                var command = new CreateUserCommand(name, wsId);
+                newUserId = await _dispatcher.SendCommandAsync<CreateUserCommand, User>(command);
 
-            var command = new CreateUserCommand(name, wsId);
-            var newUserId = await _dispatcher.SendCommandAsync<CreateUserCommand, User>(command);
-
-            var commandMsg = new CreateMessageCommand(newUserId.Id, wsId, text!, dateMessage, mimeType, mediaId, typeMessage);
-            var message = await _dispatcher.SendCommandAsync<CreateMessageCommand, Message>(commandMsg);
-
+                var commandMsg = new CreateMessageCommand(newUserId.Id, wsId, text!, dateMessage, mimeType, mediaId, typeMessage);
+                var message = await _dispatcher.SendCommandAsync<CreateMessageCommand, Message>(commandMsg);
+            }
             _logger.LogInformation("Mensaje recibido: " + payload.ToString());
             return TypedResults.Ok(newUserId);
         }
