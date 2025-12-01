@@ -3,6 +3,8 @@ using Application.Abstractions.Interfaces.CommandHandler;
 using Application.Abstractions.Interfaces.Dispatchers;
 using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
 using Application.Abstractions.Interfaces.QueryHandler;
+using Application.Manychat.Command;
+using Application.Manychat.CommandHandler;
 using Application.Messages.CommandHandler;
 using Application.Messages.Commands;
 using Application.Messages.Queries;
@@ -84,6 +86,8 @@ builder.Services.AddScoped<IQueryHandler<GetSystemUserByUserNameQuery, SystemUse
 builder.Services.AddScoped<ICommandHandler<CreateSystemUserCommand, SystemUser>, CreateSystemUserHandler>();
 builder.Services.AddScoped<ICommandHandler<SendReferralListCommand, Message>, SendReferralListHandler>();
 
+//ManyChat
+builder.Services.AddScoped<ICommandHandler<SetSurveyFieldsToUsersCommand, ManyChatUserResponse>, SetSurveyFieldsToUsersHandler>();
 builder.Services.Configure<ManyChatOptions>(builder.Configuration.GetSection("ManyChat"));
 builder.Services.AddHttpClient<SendWhatsAppTemplateHandler>();
 
