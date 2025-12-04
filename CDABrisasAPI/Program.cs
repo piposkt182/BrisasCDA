@@ -70,6 +70,7 @@ builder.Services.AddScoped<IDispatcher, Dispatcher>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IQueryHandler<GetAllUsersWithMessagesQuery, IEnumerable<User>>, GetAllUsersWithMessagesHandler>();
 builder.Services.AddScoped<ICommandHandler<CreateUserCommand, User>, CreateUserCommandHandler>();
+builder.Services.AddScoped<IQueryHandler<GetUserQuery, User>, GetUserHandler>();
 
 // Messages
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();

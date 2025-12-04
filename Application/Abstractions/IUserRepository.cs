@@ -6,5 +6,6 @@ namespace Application.Abstractions
     {
         Task<IEnumerable<User>> GetAllUsersWithMessages();
         Task<User> CreateUser(User user);
+        Task<User> GetUser(string whatsappNumber);
     }
 }

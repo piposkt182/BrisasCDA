@@ -3,6 +3,7 @@ using Application.Messages.Commands;
 using Application.SystemUsers.CommandHandler;
 using Application.SystemUsers.Commands;
 using Application.Users.Commands;
+using Application.Users.Queries;
 using Application.Utilities.Interfaces;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -56,8 +57,14 @@ namespace CDABrisasAPI.Controllers
             }
             else
             {
-                var command = new CreateUserCommand(name, wsId);
-                newUserId = await _dispatcher.SendCommandAsync<CreateUserCommand, User>(command);
+                var query = new GetUserQuery(wsId);
+                var user = await _dispatcher.SendQueryAsync<GetUserQuery, User>(query);
+                if (user == null)
+                {
+                    var command = new CreateUserCommand(name, wsId);
+                    newUserId = await _dispatcher.SendCommandAsync<CreateUserCommand, User>(command);
+                }else
+                    newUserId.Id=user.Id;
 
                 var commandMsg = new CreateMessageCommand(newUserId.Id, wsId, text!, dateMessage, mimeType, mediaId, typeMessage);
                 var message = await _dispatcher.SendCommandAsync<CreateMessageCommand, Message>(commandMsg);

@@ -23,5 +23,10 @@ namespace DataAccess.Repository
             await _dbContext.SaveChangesAsync();
             return user;
         }
+
+        public async Task<User> GetUser(string whatsappNumber)
+        {
+            return await _dbContext.Users.Where(u => u.Ws_Id == whatsappNumber).FirstOrDefaultAsync();
+        }
     }
 }
