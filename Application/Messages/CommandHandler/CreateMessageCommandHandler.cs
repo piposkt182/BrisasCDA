@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions;
 using Application.Abstractions.Interfaces.CommandHandler;
 using Application.Messages.Commands;
+using Application.Utilities.Interfaces;
 using Domain.Dto;
 using Domain.Models;
 using Microsoft.Extensions.Options;
@@ -14,11 +15,13 @@ namespace Application.Messages.CommandHandler
         private readonly IMessageRepository _messageRepository;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _accessToken;
-        public CreateMessageCommandHandler(IMessageRepository messageRepository, IHttpClientFactory httpClientFactory, IOptions<MetaSettings> metaOptions)
+        private readonly IBlobService _blobService;
+        public CreateMessageCommandHandler(IMessageRepository messageRepository, IHttpClientFactory httpClientFactory, IOptions<MetaSettings> metaOptions, IBlobService blobService)
         {
             _messageRepository = messageRepository;
             _httpClientFactory = httpClientFactory;
             _accessToken = metaOptions.Value.AccessToken;
+            _blobService = blobService;
         }
         public async Task<Message> HandleAsync(CreateMessageCommand command, CancellationToken cancellationToken = default)
         {
@@ -101,6 +104,10 @@ namespace Application.Messages.CommandHandler
                 var imageBytes = await client.GetByteArrayAsync(downloadUrl);
                 await File.WriteAllBytesAsync(filePath, imageBytes);
                 Console.WriteLine($"✅ Imagen guardada en: {filePath}");
+
+                
+                await _blobService.UploadToAzureAsync("referidos", imageBytes, "prueba");
+                Console.WriteLine($"✅ Imagen guardada en Azure: {filePath}");
                 return filePath;
             }
             catch (HttpRequestException httpEx)

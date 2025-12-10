@@ -18,5 +18,20 @@ namespace Application.Utilities
             await container.UploadBlobAsync(file.FileName, file.OpenReadStream());
             return true;
         }
+
+        public async Task<string> UploadToAzureAsync(string containerName, byte[] fileBytes, string fileName)
+        {
+             BlobContainerClient container = new BlobContainerClient(connectionString, containerName);
+            await container.CreateIfNotExistsAsync();
+            //await container.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob); // Opcional si quieres acceso público
+
+            BlobClient blob = container.GetBlobClient(fileName);
+
+            using var stream = new MemoryStream(fileBytes);
+            await blob.UploadAsync(stream, overwrite: true);
+
+            return blob.Uri.ToString(); // URL accesible del archivo
+        }
+
     }
 }
