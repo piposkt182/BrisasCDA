@@ -21,7 +21,11 @@ namespace DataAccess
                 entity.ToTable("UserWhatsapp");
                 entity.HasKey(u => u.Id);
 
-                entity.HasOne(u => u.Messages).WithOne(m => m.User).HasForeignKey<Message>(a => a.UserId);
+                modelBuilder.Entity<User>()
+       .HasMany(u => u.Messages)
+       .WithOne(m => m.User)
+       .HasForeignKey(m => m.UserId)
+       .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Message>(entity =>

@@ -38,7 +38,7 @@ namespace Application.Messages.CommandHandler
                 return await _messageRepository.CreateMessage(message);
             }else if (command.typeMessage == 2)
             {
-                var imageUrl = await SaveImageAsync(command.mimeType, command.mediaId);
+                var imageUrl = await SaveImageAsync(command.mimeType, command.mediaId, command.number);
                 if (!string.IsNullOrEmpty(imageUrl))
                 {
                     var message = new Message
@@ -59,7 +59,7 @@ namespace Application.Messages.CommandHandler
                 throw new InvalidOperationException("Se esta intentando guardar un tipo de mensaje incorrecto.");
         }
 
-        private async Task<string> SaveImageAsync( string mimeType, string mediaId)
+        private async Task<string> SaveImageAsync( string mimeType, string mediaId, string number)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace Application.Messages.CommandHandler
                 Console.WriteLine($"✅ Imagen guardada en: {filePath}");
 
                 //Save image in azure portal
-                filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, "prueba");
+                filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{number}");
                 Console.WriteLine($"✅ Imagen guardada en Azure: {filePath}");
                 return filePath;
             }

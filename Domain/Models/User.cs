@@ -6,6 +6,6 @@ namespace Domain.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Ws_Id { get; set; }
-        public Message Messages { get; set; }
+        public ICollection<Message> Messages { get; set; } = new List<Message>();
     }
 }

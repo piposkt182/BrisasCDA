@@ -26,9 +26,12 @@ namespace Application.Users.QueryHandler
 
             foreach (var user in users)
             {
-                if (user.Messages != null && !string.IsNullOrEmpty(user.Messages.ImageUrl))
+                foreach (var messages in user?.Messages)
                 {
-                    user.Messages.ImageUrl = await _blobService.GetImageWithSasFromUrl(user.Messages.ImageUrl);
+                    if (user.Messages != null && !string.IsNullOrEmpty(messages.ImageUrl))
+                    {
+                        messages.ImageUrl = await _blobService.GetImageWithSasFromUrl(messages.ImageUrl);
+                    }
                 }
             }
 
