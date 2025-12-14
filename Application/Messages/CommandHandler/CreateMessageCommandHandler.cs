@@ -105,8 +105,8 @@ namespace Application.Messages.CommandHandler
                 await File.WriteAllBytesAsync(filePath, imageBytes);
                 Console.WriteLine($"✅ Imagen guardada en: {filePath}");
 
-                
-                await _blobService.UploadToAzureAsync("referidos", imageBytes, "prueba");
+                //Save image in azure portal
+                filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, "prueba");
                 Console.WriteLine($"✅ Imagen guardada en Azure: {filePath}");
                 return filePath;
             }

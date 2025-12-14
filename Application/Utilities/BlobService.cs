@@ -1,5 +1,6 @@
 ﻿using Application.Utilities.Interfaces;
 using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -32,6 +33,40 @@ namespace Application.Utilities
 
             return blob.Uri.ToString(); // URL accesible del archivo
         }
+
+        public async Task<string> GetImageWithSasFromUrl(string imageUrl)
+        {
+            // 1️⃣ Parsear la URL guardada
+            var uri = new Uri(imageUrl);
+           
+            var segments = uri.AbsolutePath
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+            if (segments.Length < 2)
+                throw new ArgumentException("La URL no es una URL válida de Azure Blob.");
+
+            var containerName = segments[0];                 // referidos
+            var blobName = string.Join('/', segments.Skip(1)); // prueba
+
+            // 2️⃣ Crear el BlobClient usando la URL original
+            var blobClient = new BlobClient(
+                connectionString,
+                containerName,
+                blobName);
+
+            // 3️⃣ Construir SAS
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = containerName,
+                BlobName = blobName,
+                Resource = "b",
+                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30)
+            };
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+            // 4️⃣ Generar URL con SAS
+            return blobClient.GenerateSasUri(sasBuilder).ToString();
+        }
+
 
     }
 }
