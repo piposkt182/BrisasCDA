@@ -26,6 +26,7 @@ using DataAccess.Repository;
 using Domain.Dto;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +51,8 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
         });
 });
+
+Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -94,6 +97,10 @@ builder.Services.AddHttpClient<SendWhatsAppTemplateHandler>();
 
 //Azure
 builder.Services.AddTransient<IBlobService,BlobService>();
+
+//Excel
+builder.Services.AddTransient<IExcelFileService, ExcelFileService>();
+builder.Services.AddScoped<ICommandHandler<SetUserForAgreementCommand, IEnumerable<Message>>, SetUserForAgreementHandler>();
 
 var app = builder.Build();
 

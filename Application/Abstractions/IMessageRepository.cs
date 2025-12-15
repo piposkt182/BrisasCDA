@@ -6,5 +6,6 @@ namespace Application.Abstractions
     {
         Task<Message> CreateMessage(Message message);
         Task<IEnumerable<Message>> GetAllMessages();
+        Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plate);
     }
 }

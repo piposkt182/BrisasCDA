@@ -1,6 +1,7 @@
 ﻿using Application.Abstractions;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 
 namespace DataAccess.Repository
 {
@@ -22,6 +23,27 @@ namespace DataAccess.Repository
         public async Task<IEnumerable<Message>> GetAllMessages()
         {
             return await _dbContext.Messages.Include(p => p.PaymentStatus).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plates)
+        {
+            var normalizedPlates = plates
+          .Where(p => !string.IsNullOrWhiteSpace(p))
+          .Select(p => p.ToLower())
+          .ToList();
+
+            await _dbContext.Messages
+                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()))
+                .ExecuteUpdateAsync(setters =>
+                    setters.SetProperty(
+                        m => m.PaymentStatusId,
+                        _ => 2
+                    )
+                );
+
+            return await _dbContext.Messages
+                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()))
+                .ToListAsync();
         }
     }
 }
