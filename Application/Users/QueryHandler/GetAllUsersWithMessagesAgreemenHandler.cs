@@ -6,21 +6,19 @@ using Domain.Models;
 
 namespace Application.Users.QueryHandler
 {
-    public class GetAllUsersWithMessagesHandler : IQueryHandler<GetAllUsersWithMessagesQuery, IEnumerable<User>>
+    public class GetAllUsersWithMessagesAgreemenHandler : IQueryHandler<GetAllUsersWithMessagesAgreemenQuery, IEnumerable<User>>
     {
         private readonly IUserRepository _userRepository;
         private readonly IBlobService _blobService;
 
-        public GetAllUsersWithMessagesHandler(IUserRepository userRepository, IBlobService blobService)
+        public GetAllUsersWithMessagesAgreemenHandler(IUserRepository userRepository, IBlobService blobService)
         {
             _userRepository = userRepository;
             _blobService = blobService;
         }
-
-        public async Task<IEnumerable<User>> HandleAsync(GetAllUsersWithMessagesQuery query, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<User>> HandleAsync(GetAllUsersWithMessagesAgreemenQuery query, CancellationToken cancellationToken = default)
         {
-            var users = await _userRepository.GetAllUsersWithMessages();
-
+            var users = await _userRepository.GetAllUsersWithMessagesAgreement(query.MessageIds);
             foreach (var user in users)
             {
                 foreach (var messages in user?.Messages)

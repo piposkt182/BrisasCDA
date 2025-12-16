@@ -52,7 +52,12 @@ namespace CDABrisasAPI.Controllers
         {
             var query = new GetAllUsersWithMessagesQuery();
             var users = await _dispatcher.SendQueryAsync<GetAllUsersWithMessagesQuery, IEnumerable<User>>(query);
-            return Ok(users);
+            return Ok(new UsersModificationResultDto
+            {
+                HasChanges = false,
+                ModifiedCount = 0,
+                Users = users
+            });
         }
 
     }

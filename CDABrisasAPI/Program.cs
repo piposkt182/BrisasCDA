@@ -74,6 +74,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IQueryHandler<GetAllUsersWithMessagesQuery, IEnumerable<User>>, GetAllUsersWithMessagesHandler>();
 builder.Services.AddScoped<ICommandHandler<CreateUserCommand, User>, CreateUserCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetUserQuery, User>, GetUserHandler>();
+builder.Services.AddScoped<IQueryHandler<GetAllUsersWithMessagesAgreemenQuery, IEnumerable<User>>, GetAllUsersWithMessagesAgreemenHandler>();
 
 // Messages
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();

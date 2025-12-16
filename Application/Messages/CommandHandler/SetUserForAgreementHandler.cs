@@ -21,6 +21,7 @@ namespace Application.Messages.CommandHandler
             var aggrements = VerificationAgreementMapper.Map(command.ExcelField);
             List<string> plates = [.. aggrements.Select(a => a.Placa)];
             var messages = await _messageRepository.SetAllMessagesForAgreement(plates);
+
             return messages;
         }
     }

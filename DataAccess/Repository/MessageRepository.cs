@@ -32,8 +32,8 @@ namespace DataAccess.Repository
           .Select(p => p.ToLower())
           .ToList();
 
-            await _dbContext.Messages
-                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()))
+            var affectedRows =  await _dbContext.Messages
+                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()) && m.PaymentStatusId == 1)
                 .ExecuteUpdateAsync(setters =>
                     setters.SetProperty(
                         m => m.PaymentStatusId,
@@ -41,8 +41,16 @@ namespace DataAccess.Repository
                     )
                 );
 
+            if (affectedRows == 0)
+            {
+                return Enumerable.Empty<Message>();
+            }
+
             return await _dbContext.Messages
-                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()))
+                .Where(m =>
+                    normalizedPlates.Contains(m.Text!.ToLower()) &&
+                    m.PaymentStatusId == 2
+                )
                 .ToListAsync();
         }
     }

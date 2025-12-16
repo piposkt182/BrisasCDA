@@ -28,5 +28,15 @@ namespace DataAccess.Repository
         {
             return await _dbContext.Users.Where(u => u.Ws_Id == whatsappNumber).FirstOrDefaultAsync();
         }
+
+        public async Task<IEnumerable<User>> GetAllUsersWithMessagesAgreement(List<int> messagesId)
+        {
+            return await _dbContext.Users
+                .Where(u => u.Messages.Any(m => messagesId.Contains(m.Id)))
+                .Include(u => u.Messages
+                    .Where(m => messagesId.Contains(m.Id)))
+                    .ThenInclude(m => m.PaymentStatus)
+                .ToListAsync();
+        }
     }
 }

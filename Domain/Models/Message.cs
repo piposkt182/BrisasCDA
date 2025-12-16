@@ -16,7 +16,6 @@ namespace Domain.Models
 
         [JsonIgnore]
         public User User { get; set; } 
-
         public PaymentStatus PaymentStatus { get; set; }
     }
 }
