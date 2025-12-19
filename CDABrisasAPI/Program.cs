@@ -41,16 +41,28 @@ builder.Services.AddControllers()
 // ✅ Configuración de CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: "allowCors",
-        corsBuilder =>
-        {
-            corsBuilder
-                .WithOrigins("https://localhost:7124", "http://localhost:4200") // 👈 Puedes agregar más orígenes si usas Angular
-                .AllowCredentials()
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+    options.AddPolicy("allowCors", corsBuilder =>
+    {
+        corsBuilder
+            .WithOrigins(
+                // Local
+                "https://localhost:7124",
+                "http://localhost:4200",
+                "http://localhost:4300",
+
+                // Frontend Angular en Azure
+                "https://tecnoyaweb-dxfqasf3awcvega2.westus3-01.azurewebsites.net",
+
+                // API (opcional)
+                "https://tecnoyaapi-djdjguaccbb6g0fw.brazilsouth-01.azurewebsites.net"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        // ❌ NO AllowCredentials
+    });
 });
+
+
 
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
