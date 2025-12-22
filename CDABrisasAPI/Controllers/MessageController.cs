@@ -2,7 +2,6 @@
 using Application.Messages.Commands;
 using Application.Messages.Queries;
 using Application.Utilities.Interfaces;
-using Azure.Identity;
 using Domain.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +46,22 @@ namespace CDABrisasAPI.Controllers
         {
             await _blobService.UploadFile("referidos", file);
             return StatusCode(200, "Imagen guardada");
+        }
+
+        [HttpGet("images/{imageId}")]
+        [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
+        public async Task<IActionResult> GetImage(string imageId, CancellationToken ct)
+        {
+            var result = await _blobService.OpenReadStreamAsync(imageId, ct);
+
+            if (result == null)
+                return NotFound();
+
+            return File(
+                result.Value.Stream,
+                result.Value.ContentType,
+                enableRangeProcessing: true
+            );
         }
     }
 }

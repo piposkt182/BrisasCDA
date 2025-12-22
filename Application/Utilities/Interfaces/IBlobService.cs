@@ -7,5 +7,6 @@ namespace Application.Utilities.Interfaces
         Task<bool> UploadFile(string container, IFormFile file);
         Task<string> UploadToAzureAsync(string containerName, byte[] fileBytes, string fileName);
         Task<string> GetImageWithSasFromUrl(string imageUrl);
+        Task<(Stream Stream, string ContentType)?> OpenReadStreamAsync(string blobName, CancellationToken ct = default);
     }
 }

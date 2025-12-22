@@ -59,7 +59,6 @@ namespace CDABrisasAPI.Controllers
                 Users = users
             });
         }
-
     }
 }
 

@@ -5,6 +5,7 @@ using Application.Utilities.Interfaces;
 using Domain.Dto;
 using Domain.Models;
 using Microsoft.Extensions.Options;
+using System.IO.Enumeration;
 using System.Text.Json;
 
 namespace Application.Messages.CommandHandler
@@ -38,7 +39,9 @@ namespace Application.Messages.CommandHandler
                 return await _messageRepository.CreateMessage(message);
             }else if (command.typeMessage == 2)
             {
-                var imageUrl = await SaveImageAsync(command.mimeType, command.mediaId, command.number);
+                string imageUrl = string.Empty;
+                string fileName = string.Empty;
+                (imageUrl, fileName) = await SaveImageAsync(command.mimeType, command.mediaId, command.number);
                 if (!string.IsNullOrEmpty(imageUrl))
                 {
                     var message = new Message
@@ -49,7 +52,8 @@ namespace Application.Messages.CommandHandler
                         DateMessage = command.dateMessage,
                         ImageUrl = imageUrl,
                         MimeType = command.mimeType,
-                        PaymentStatusId = 1
+                        PaymentStatusId = 1,
+                        ImageName = fileName
                     };
                     return await _messageRepository.CreateMessage(message);
                 }
@@ -59,11 +63,12 @@ namespace Application.Messages.CommandHandler
                 throw new InvalidOperationException("Se esta intentando guardar un tipo de mensaje incorrecto.");
         }
 
-        private async Task<string> SaveImageAsync( string mimeType, string mediaId, string number)
+        private async Task<(string filePath, string fileName)> SaveImageAsync( string mimeType, string mediaId, string number)
         {
             try
             {
                 string filePath = string.Empty;
+                string fileName = string.Empty;
                 var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
@@ -89,26 +94,28 @@ namespace Application.Messages.CommandHandler
                 {
                     throw new InvalidOperationException("La URL de descarga de la imagen está vacía.");
                 }
-
-                // 2️⃣ Preparar ruta de guardado
-                var extension = ObtenerExtensionDesdeMime(mimeType);
-                var folderName = DateTime.UtcNow.ToString("yyyyMMdd"); // Carpeta con la fecha
-                var fileName = $"{Guid.NewGuid()}{extension}";         // Nombre único para evitar colisiones
-
-                var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
-                Directory.CreateDirectory(uploadPath); // Crea la carpeta si no existe
-
-                filePath = Path.Combine(uploadPath, fileName);
-
-                // 3️⃣ Descargar y guardar imagen
                 var imageBytes = await client.GetByteArrayAsync(downloadUrl);
-                await File.WriteAllBytesAsync(filePath, imageBytes);
-                Console.WriteLine($"✅ Imagen guardada en: {filePath}");
+
+                //// 2️⃣ Preparar ruta de guardado
+                //var extension = ObtenerExtensionDesdeMime(mimeType);
+                //var folderName = DateTime.UtcNow.ToString("yyyyMMdd"); // Carpeta con la fecha
+                //var fileName = $"{Guid.NewGuid()}{extension}";         // Nombre único para evitar colisiones
+
+                //var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
+                //Directory.CreateDirectory(uploadPath); // Crea la carpeta si no existe
+
+                //filePath = Path.Combine(uploadPath, fileName);
+
+                //// 3️⃣ Descargar y guardar imagen
+
+                //await File.WriteAllBytesAsync(filePath, imageBytes);
+                //Console.WriteLine($"✅ Imagen guardada en: {filePath}");
 
                 //Save image in azure portal
-                filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{number}");
+                fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{number}";
+                filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, fileName);
                 Console.WriteLine($"✅ Imagen guardada en Azure: {filePath}");
-                return filePath;
+                return (filePath, fileName);
             }
             catch (HttpRequestException httpEx)
             {

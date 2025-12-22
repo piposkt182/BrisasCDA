@@ -8,53 +8,57 @@ namespace Application.Utilities
 {
     public class BlobService : IBlobService
     {
-        private string connectionString;
+        private readonly string _connectionString;
+
         public BlobService(IConfiguration config)
         {
-            connectionString = config["Azure:BlobStorage"];
+            _connectionString = config["Azure:BlobStorage"];
         }
+
+        // 🔹 MÉTODO CENTRALIZADO (CLAVE)
+        private BlobContainerClient GetContainerClient(string containerName)
+        {
+            return new BlobContainerClient(_connectionString, containerName);
+        }
+
         public async Task<bool> UploadFile(string containerName, IFormFile file)
         {
-            BlobContainerClient container = new BlobContainerClient(connectionString, containerName);
+            var container = GetContainerClient(containerName);
+            await container.CreateIfNotExistsAsync();
+
             await container.UploadBlobAsync(file.FileName, file.OpenReadStream());
             return true;
         }
 
         public async Task<string> UploadToAzureAsync(string containerName, byte[] fileBytes, string fileName)
         {
-             BlobContainerClient container = new BlobContainerClient(connectionString, containerName);
+            var container = GetContainerClient(containerName);
             await container.CreateIfNotExistsAsync();
-            //await container.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob); // Opcional si quieres acceso público
 
-            BlobClient blob = container.GetBlobClient(fileName);
+            var blob = container.GetBlobClient(fileName);
 
             using var stream = new MemoryStream(fileBytes);
             await blob.UploadAsync(stream, overwrite: true);
 
-            return blob.Uri.ToString(); // URL accesible del archivo
+            return blob.Uri.ToString(); // se guarda en DB
         }
 
         public async Task<string> GetImageWithSasFromUrl(string imageUrl)
         {
-            // 1️⃣ Parsear la URL guardada
             var uri = new Uri(imageUrl);
-           
+
             var segments = uri.AbsolutePath
                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
 
             if (segments.Length < 2)
                 throw new ArgumentException("La URL no es una URL válida de Azure Blob.");
 
-            var containerName = segments[0];                 // referidos
-            var blobName = string.Join('/', segments.Skip(1)); // prueba
+            var containerName = segments[0];
+            var blobName = string.Join('/', segments.Skip(1));
 
-            // 2️⃣ Crear el BlobClient usando la URL original
-            var blobClient = new BlobClient(
-                connectionString,
-                containerName,
-                blobName);
+            var container = GetContainerClient(containerName);
+            var blobClient = container.GetBlobClient(blobName);
 
-            // 3️⃣ Construir SAS
             var sasBuilder = new BlobSasBuilder
             {
                 BlobContainerName = containerName,
@@ -62,11 +66,26 @@ namespace Application.Utilities
                 Resource = "b",
                 ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(30)
             };
+
             sasBuilder.SetPermissions(BlobSasPermissions.Read);
-            // 4️⃣ Generar URL con SAS
+
             return blobClient.GenerateSasUri(sasBuilder).ToString();
         }
 
+        public async Task<(Stream Stream, string ContentType)?> OpenReadStreamAsync(
+            string blobName,
+            CancellationToken ct = default)
+        {
+            var container = GetContainerClient("referidos");
+            var blobClient = container.GetBlobClient(blobName);
 
+            if (!await blobClient.ExistsAsync(ct))
+                return null;
+
+            var props = await blobClient.GetPropertiesAsync(cancellationToken: ct);
+            var stream = await blobClient.OpenReadAsync(cancellationToken: ct);
+
+            return (stream, props.Value.ContentType ?? "application/octet-stream");
+        }
     }
 }
