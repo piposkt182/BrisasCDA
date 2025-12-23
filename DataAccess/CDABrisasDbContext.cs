@@ -11,6 +11,7 @@ namespace DataAccess
         public DbSet<Message> Messages { get; set; }
         public DbSet<SystemUser> SystemUsers { get; set; }
         public DbSet<PaymentStatus> PaymentsStatus { get; set; }
+        public DbSet<Agreement> Agreements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -18,21 +19,20 @@ namespace DataAccess
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("UserWhatsapp");
+                entity.ToTable("Customer");
                 entity.HasKey(u => u.Id);
 
                 modelBuilder.Entity<User>()
-       .HasMany(u => u.Messages)
-       .WithOne(m => m.User)
-       .HasForeignKey(m => m.UserId)
-       .OnDelete(DeleteBehavior.Cascade);
+                            .HasMany(u => u.Messages)
+                            .WithOne(m => m.User)
+                            .HasForeignKey(m => m.UserId)
+                            .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Message>(entity =>
             {
                 entity.ToTable("Message");
                 entity.HasKey(u => u.Id);
-                //entity.HasOne(u => u.PaymentStatus).WithOne(m => m.Messages).HasForeignKey<Message>(a => a.PaymentStatusId);
             });
 
             modelBuilder.Entity<SystemUser>(entity =>
@@ -47,10 +47,22 @@ namespace DataAccess
                 entity.HasKey(u => u.Id);
             });
 
+            modelBuilder.Entity<Agreement>(entity =>
+            {
+                entity.ToTable("Agreement");
+                entity.HasKey(a => a.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            });
+
             modelBuilder.Entity<PaymentStatus>()
-        .HasMany(p => p.Messages)
-        .WithOne(m => m.PaymentStatus)
-        .HasForeignKey(m => m.PaymentStatusId);
+                        .HasMany(p => p.Messages)
+                        .WithOne(m => m.PaymentStatus)
+                        .HasForeignKey(m => m.PaymentStatusId);
+
+            modelBuilder.Entity<Agreement>()
+                       .HasMany(p => p.Messages)
+                       .WithOne(m => m.Agreements)
+                       .HasForeignKey(m => m.AgreementId);
         }
     }
 }

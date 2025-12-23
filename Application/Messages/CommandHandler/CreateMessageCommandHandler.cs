@@ -1,11 +1,11 @@
 ﻿using Application.Abstractions;
 using Application.Abstractions.Interfaces.CommandHandler;
 using Application.Messages.Commands;
+using Application.Utilities.Enums;
 using Application.Utilities.Interfaces;
 using Domain.Dto;
 using Domain.Models;
 using Microsoft.Extensions.Options;
-using System.IO.Enumeration;
 using System.Text.Json;
 
 namespace Application.Messages.CommandHandler
@@ -52,7 +52,7 @@ namespace Application.Messages.CommandHandler
                         DateMessage = command.dateMessage,
                         ImageUrl = imageUrl,
                         MimeType = command.mimeType,
-                        PaymentStatusId = 1,
+                        PaymentStatusId = (int)PaymentStatusId.Paid,
                         ImageName = fileName
                     };
                     return await _messageRepository.CreateMessage(message);
@@ -129,15 +129,15 @@ namespace Application.Messages.CommandHandler
             }
         }
 
-        private string ObtenerExtensionDesdeMime(string mimeType)
-        {
-            return mimeType switch
-            {
-                "image/jpeg" => ".jpg",
-                "image/png" => ".png",
-                "image/webp" => ".webp",
-                _ => ".bin"
-            };
-        }
+        //private string ObtenerExtensionDesdeMime(string mimeType)
+        //{
+        //    return mimeType switch
+        //    {
+        //        "image/jpeg" => ".jpg",
+        //        "image/png" => ".png",
+        //        "image/webp" => ".webp",
+        //        _ => ".bin"
+        //    };
+        //}
     }
 }

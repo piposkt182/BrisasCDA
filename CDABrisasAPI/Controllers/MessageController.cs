@@ -1,7 +1,10 @@
 ﻿using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
 using Application.Messages.Commands;
 using Application.Messages.Queries;
+using Application.Users.Queries;
 using Application.Utilities.Interfaces;
+using CDABrisasAPI.Dto;
+using Domain.Dto;
 using Domain.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +65,21 @@ namespace CDABrisasAPI.Controllers
                 result.Value.ContentType,
                 enableRangeProcessing: true
             );
+        }
+
+        [HttpPost("PaidAgreements")]
+        public async Task<IActionResult> PaidAgreements(List<int> id)
+        {
+            var command = new PaidAgreementsCommand(id);
+            var updatedMessages = await _dispatcher.SendCommandAsync<PaidAgreementsCommand, PaidAgreementsResult>(command);
+            var query = new GetAllUsersWithMessagesQuery();
+            var users = await _dispatcher.SendQueryAsync<GetAllUsersWithMessagesQuery, IEnumerable<User>>(query);
+            return Ok(new UsersModificationResultDto
+            {
+                HasChanges = false,
+                ModifiedCount = 0,
+                Users = users
+            });
         }
     }
 }

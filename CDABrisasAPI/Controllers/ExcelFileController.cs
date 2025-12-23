@@ -34,31 +34,14 @@ namespace CDABrisasAPI.Controllers
             var command = new SetUserForAgreementCommand(result);
             messages = await _dispatcher.SendCommandAsync<SetUserForAgreementCommand, IEnumerable<Message>>(command);
 
-            if (messages.Any())
+            var query = new GetAllUsersWithMessagesQuery();
+            var users = await _dispatcher.SendQueryAsync<GetAllUsersWithMessagesQuery, IEnumerable<User>>(query);
+            return Ok(new UsersModificationResultDto
             {
-                List<int> messageIds = messages.Select(m => m.Id).ToList();
-                var query = new GetAllUsersWithMessagesAgreemenQuery(messageIds);
-                var users = await _dispatcher.SendQueryAsync<GetAllUsersWithMessagesAgreemenQuery, IEnumerable<User>>(query);
-                return Ok(new UsersModificationResultDto
-                {
-                    HasChanges = true,
-                    ModifiedCount = users.Count(),
-                    Users = users
-                });
-               
-            }
-            else
-            {
-                var query = new GetAllUsersWithMessagesQuery();
-                var users = await _dispatcher.SendQueryAsync<GetAllUsersWithMessagesQuery, IEnumerable<User>>(query);
-                return Ok(new UsersModificationResultDto
-                {
-                    HasChanges = false,
-                    ModifiedCount = 0,
-                    Users = users
-                });
-            }
-           
+                HasChanges = false,
+                ModifiedCount = 0,
+                Users = users
+            });
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using Domain.Dto;
+using Domain.Models;
 
 namespace Application.Abstractions
 {
@@ -7,5 +8,6 @@ namespace Application.Abstractions
         Task<Message> CreateMessage(Message message);
         Task<IEnumerable<Message>> GetAllMessages();
         Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plate);
+        Task<PaidAgreementsResult> PaidAgreementsAsync(List<int> ids);
     }
 }

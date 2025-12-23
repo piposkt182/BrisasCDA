@@ -1,7 +1,8 @@
 ﻿using Application.Abstractions;
+using Application.Utilities.Enums;
+using Domain.Dto;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Numerics;
 
 namespace DataAccess.Repository
 {
@@ -27,17 +28,13 @@ namespace DataAccess.Repository
 
         public async Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plates)
         {
-            var normalizedPlates = plates
-          .Where(p => !string.IsNullOrWhiteSpace(p))
-          .Select(p => p.ToLower())
-          .ToList();
-
-            var affectedRows =  await _dbContext.Messages
+            var normalizedPlates = plates.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.ToLower()).ToList();
+            var affectedRows = await _dbContext.Messages
                 .Where(m => normalizedPlates.Contains(m.Text!.ToLower()) && m.PaymentStatusId == 1)
                 .ExecuteUpdateAsync(setters =>
                     setters.SetProperty(
                         m => m.PaymentStatusId,
-                        _ => 2
+                        _ => (int)PaymentStatusId.Review
                     )
                 );
 
@@ -49,9 +46,24 @@ namespace DataAccess.Repository
             return await _dbContext.Messages
                 .Where(m =>
                     normalizedPlates.Contains(m.Text!.ToLower()) &&
-                    m.PaymentStatusId == 2
+                    m.PaymentStatusId == (int)PaymentStatusId.Review
                 )
                 .ToListAsync();
+        }
+        public async Task<PaidAgreementsResult> PaidAgreementsAsync(List<int> ids)
+        {
+            var messages = await _dbContext.Messages
+                .Where(m => ids.Contains(m.Id))
+                .ToListAsync();
+
+            messages.ForEach(m => m.PaymentStatusId = (int)PaymentStatusId.Paid);
+
+            await _dbContext.SaveChangesAsync();
+
+            return new PaidAgreementsResult(
+                Requested: ids.Count,
+                Updated: messages.Count
+            );
         }
     }
 }

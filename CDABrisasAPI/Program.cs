@@ -20,7 +20,6 @@ using Application.Users.QueryHandler;
 using Application.Utilities;
 using Application.Utilities.Dtos;
 using Application.Utilities.Interfaces;
-using CDABrisasAPI.Dto;
 using DataAccess;
 using DataAccess.Repository;
 using Domain.Dto;
@@ -93,6 +92,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICommandHandler<CreateMessageCommand, Message>, CreateMessageCommandHandler>();
 builder.Services.AddScoped<IQueryHandler<GetAllMessagesQuery, IEnumerable<Message>>, GetAllMessagesHandler>();
 builder.Services.AddScoped<ICommandHandler<SendWhatsAppTemplateCommand, string>, SendWhatsAppTemplateHandler>();
+builder.Services.AddTransient<ICommandHandler<PaidAgreementsCommand,PaidAgreementsResult>, PaidAgreementsHandler>();
 
 // Webhook
 builder.Services.AddScoped<IWhatsAppWebhookParser, WhatsAppWebhookParser>();

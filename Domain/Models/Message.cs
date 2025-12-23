@@ -14,9 +14,11 @@ namespace Domain.Models
         public string? MimeType { get; set; }
         public int PaymentStatusId { get; set; }
         public string? ImageName { get; set; }
+        public int? AgreementId { get; set; }
 
         [JsonIgnore]
         public User User { get; set; } 
         public PaymentStatus PaymentStatus { get; set; }
+        public Agreement? Agreements { get; set; }
     }
 }
