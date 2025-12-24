@@ -3,10 +3,14 @@ using Application.Abstractions.Interfaces.CommandHandler;
 using Application.Messages.Commands;
 using Application.Utilities.Enums;
 using Application.Utilities.Interfaces;
+using Azure;
+using Azure.AI.Vision.ImageAnalysis;
 using Domain.Dto;
 using Domain.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Application.Messages.CommandHandler
 {
@@ -17,12 +21,17 @@ namespace Application.Messages.CommandHandler
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _accessToken;
         private readonly IBlobService _blobService;
-        public CreateMessageCommandHandler(IMessageRepository messageRepository, IHttpClientFactory httpClientFactory, IOptions<MetaSettings> metaOptions, IBlobService blobService)
+        private readonly string _AzureIAEnpoint;
+        private readonly string _AzureApiKey;
+
+        public CreateMessageCommandHandler(IMessageRepository messageRepository, IHttpClientFactory httpClientFactory, IOptions<MetaSettings> metaOptions, IBlobService blobService, IConfiguration configuration)
         {
             _messageRepository = messageRepository;
             _httpClientFactory = httpClientFactory;
             _accessToken = metaOptions.Value.AccessToken;
             _blobService = blobService;
+            _AzureIAEnpoint = configuration["AzureIA:Endpoint"];
+            _AzureApiKey = configuration["AzureIA:ApiKey"];
         }
         public async Task<Message> HandleAsync(CreateMessageCommand command, CancellationToken cancellationToken = default)
         {
@@ -41,7 +50,8 @@ namespace Application.Messages.CommandHandler
             {
                 string imageUrl = string.Empty;
                 string fileName = string.Empty;
-                (imageUrl, fileName) = await SaveImageAsync(command.mimeType, command.mediaId, command.number);
+                string plateImg = string.Empty;
+                (imageUrl, fileName, plateImg) = await SaveImageAsync(command.mimeType, command.mediaId, command.number);
                 if (!string.IsNullOrEmpty(imageUrl))
                 {
                     var message = new Message
@@ -49,6 +59,7 @@ namespace Application.Messages.CommandHandler
                         UserId = command.userId,
                         Number = command.number,
                         Text = command.text,
+                        PlateVehicle = plateImg,
                         DateMessage = command.dateMessage,
                         ImageUrl = imageUrl,
                         MimeType = command.mimeType,
@@ -63,12 +74,14 @@ namespace Application.Messages.CommandHandler
                 throw new InvalidOperationException("Se esta intentando guardar un tipo de mensaje incorrecto.");
         }
 
-        private async Task<(string filePath, string fileName)> SaveImageAsync( string mimeType, string mediaId, string number)
+        private async Task<(string filePath, string fileName, string plateImg)> SaveImageAsync( string mimeType, string mediaId, string number)
         {
             try
             {
                 string filePath = string.Empty;
                 string fileName = string.Empty;
+                string plateImg = string.Empty;
+
                 var client = _httpClientFactory.CreateClient();
                 client.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
@@ -95,27 +108,18 @@ namespace Application.Messages.CommandHandler
                     throw new InvalidOperationException("La URL de descarga de la imagen está vacía.");
                 }
                 var imageBytes = await client.GetByteArrayAsync(downloadUrl);
-
-                //// 2️⃣ Preparar ruta de guardado
-                //var extension = ObtenerExtensionDesdeMime(mimeType);
-                //var folderName = DateTime.UtcNow.ToString("yyyyMMdd"); // Carpeta con la fecha
-                //var fileName = $"{Guid.NewGuid()}{extension}";         // Nombre único para evitar colisiones
-
-                //var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", folderName);
-                //Directory.CreateDirectory(uploadPath); // Crea la carpeta si no existe
-
-                //filePath = Path.Combine(uploadPath, fileName);
-
-                //// 3️⃣ Descargar y guardar imagen
-
-                //await File.WriteAllBytesAsync(filePath, imageBytes);
-                //Console.WriteLine($"✅ Imagen guardada en: {filePath}");
-
+                
                 //Save image in azure portal
                 fileName = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{number}";
                 filePath = await _blobService.UploadToAzureAsync("referidos", imageBytes, fileName);
                 Console.WriteLine($"✅ Imagen guardada en Azure: {filePath}");
-                return (filePath, fileName);
+
+                //QUITAR
+                //filePath = "https://referidosstorage.blob.core.windows.net/referidos/20251223_213910_573012282168";
+                var sas = _blobService.GetImageWithSasFromUrl(filePath);
+                plateImg = await DetectPlateAsync(sas.Result);
+
+                return (filePath, fileName, plateImg);
             }
             catch (HttpRequestException httpEx)
             {
@@ -129,15 +133,43 @@ namespace Application.Messages.CommandHandler
             }
         }
 
-        //private string ObtenerExtensionDesdeMime(string mimeType)
-        //{
-        //    return mimeType switch
-        //    {
-        //        "image/jpeg" => ".jpg",
-        //        "image/png" => ".png",
-        //        "image/webp" => ".webp",
-        //        _ => ".bin"
-        //    };
-        //}
+
+
+        public async Task<string?> DetectPlateAsync(string imageUrl)
+        {
+            var client = new ImageAnalysisClient(
+                new Uri(_AzureIAEnpoint),
+                new AzureKeyCredential(_AzureApiKey)
+            );
+
+            // ✅ Firma correcta: (Uri, VisualFeatures, options?)
+            Response<ImageAnalysisResult> response = await client.AnalyzeAsync(
+                new Uri(imageUrl),
+                VisualFeatures.Read
+            );
+
+            ImageAnalysisResult result = response.Value;
+
+            // ✅ OCR vive en result.Read (no ReadResult)
+            if (result.Read == null)
+                return null;
+
+            foreach (DetectedTextBlock block in result.Read.Blocks)
+            {
+                foreach (DetectedTextLine line in block.Lines)
+                {
+                    var text = Normalize(line.Text);
+
+                    // Placa Colombia básica: ABC123
+                    if (Regex.IsMatch(text, @"^[A-Z]{3}\d{3}$"))
+                        return text;
+                }
+            }
+
+            return null;
+        }
+
+        private static string Normalize(string input) =>
+            Regex.Replace(input.ToUpperInvariant(), @"[^A-Z0-9]", "");
     }
 }

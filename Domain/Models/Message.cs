@@ -15,6 +15,7 @@ namespace Domain.Models
         public int PaymentStatusId { get; set; }
         public string? ImageName { get; set; }
         public int? AgreementId { get; set; }
+        public string? PlateVehicle {  get; set; }
 
         [JsonIgnore]
         public User User { get; set; } 
