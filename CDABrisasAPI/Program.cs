@@ -9,6 +9,7 @@ using Application.Messages.CommandHandler;
 using Application.Messages.Commands;
 using Application.Messages.Queries;
 using Application.Messages.QueryHandler;
+using Application.Services;
 using Application.SystemUsers.CommandHandler;
 using Application.SystemUsers.Commands;
 using Application.SystemUsers.Queries;
@@ -114,6 +115,12 @@ builder.Services.AddTransient<IBlobService,BlobService>();
 //Excel
 builder.Services.AddTransient<IExcelFileService, ExcelFileService>();
 builder.Services.AddScoped<ICommandHandler<SetUserForAgreementCommand, IEnumerable<Message>>, SetUserForAgreementHandler>();
+
+//Whatsapp service
+builder.Services.AddScoped<WhatsAppMessages>();
+
+//Azure Services
+builder.Services.AddScoped<AzureService>();
 
 var app = builder.Build();
 
