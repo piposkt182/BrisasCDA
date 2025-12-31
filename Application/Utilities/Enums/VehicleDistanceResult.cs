@@ -5,6 +5,7 @@ namespace Application.Utilities.Enums
     {
         Far,        
         Close,      
-        Uncertain   
+        Uncertain,
+        Rejected    
     }
 }

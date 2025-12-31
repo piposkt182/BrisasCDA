@@ -59,15 +59,10 @@ namespace Application.Services
         {
             var message = vehicleDistance switch
             {
-                VehicleDistanceResult.Far =>
-                    "✅ !!La foto es correcta!!\r\n \r\n  Estamos procesando la información.",
-
-                VehicleDistanceResult.Close =>
-                    "⚠️ Por favor toma la foto un poco más lejos, que se vea el entorno.",
-
+                VehicleDistanceResult.Far or VehicleDistanceResult.Close or VehicleDistanceResult.Rejected =>
+                    "✅ !Listo!\r\n \r\n  Estamos procesando la información.",
                 VehicleDistanceResult.Uncertain =>
                     "❌ La imagen no es válida\r\n \r\nNo logramos identificar correctamente el vehículo ni su entorno.\r\n \r\nPor favor envía una nueva foto donde se vea el vehículo completo y el lugar donde se encuentra 🚗📸",
-
                 _ => "Resultado desconocido"
             };
             return message;

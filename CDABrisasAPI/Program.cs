@@ -3,6 +3,8 @@ using Application.Abstractions.Interfaces.CommandHandler;
 using Application.Abstractions.Interfaces.Dispatchers;
 using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
 using Application.Abstractions.Interfaces.QueryHandler;
+using Application.Agreements.Query;
+using Application.Agreements.QueryHandler;
 using Application.Manychat.Command;
 using Application.Manychat.CommandHandler;
 using Application.Messages.CommandHandler;
@@ -80,6 +82,10 @@ builder.Services.AddDbContext<CDABrisasDbContext>(options =>
 builder.Services.Configure<MetaSettings>(builder.Configuration.GetSection("Meta"));
 
 builder.Services.AddScoped<IDispatcher, Dispatcher>();
+
+//Agreement
+builder.Services.AddScoped<IAgreementRepository, AgreementRepository>();
+builder.Services.AddScoped<IQueryHandler<GetAgreementByCellPhoneQuery, Agreement>, GetAgreementByCellPhoneHandler>();
 
 // WS Users
 builder.Services.AddScoped<IUserRepository, UserRepository>();
