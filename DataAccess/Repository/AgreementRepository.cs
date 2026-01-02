@@ -13,5 +13,7 @@ namespace DataAccess.Repository
         }
 
         public async Task<Agreement> GetAgreementByCellPhone(string cellPhoneNumber) => await _dbContext.Agreements.Where(a => a.CellPhoneNumber == cellPhoneNumber).FirstOrDefaultAsync();
+
+        public async Task<List<Agreement>> GetAllAgreements() => await _dbContext.Agreements.ToListAsync();
     }
 }

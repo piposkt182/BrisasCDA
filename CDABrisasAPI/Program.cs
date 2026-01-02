@@ -86,6 +86,7 @@ builder.Services.AddScoped<IDispatcher, Dispatcher>();
 //Agreement
 builder.Services.AddScoped<IAgreementRepository, AgreementRepository>();
 builder.Services.AddScoped<IQueryHandler<GetAgreementByCellPhoneQuery, Agreement>, GetAgreementByCellPhoneHandler>();
+builder.Services.AddScoped<IQueryHandler<GetAllAgreementsQuery,IEnumerable<Agreement>>, GetAllAgreementsHandler>();
 
 // WS Users
 builder.Services.AddScoped<IUserRepository, UserRepository>();
