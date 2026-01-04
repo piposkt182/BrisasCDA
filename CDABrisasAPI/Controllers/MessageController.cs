@@ -51,6 +51,14 @@ namespace CDABrisasAPI.Controllers
             return StatusCode(200, "Imagen guardada");
         }
 
+        [HttpPost("ApproveMessage")]
+        public async Task<IActionResult> ApproveMessage(int id)
+        {
+            var command = new ApproveMessageCommand(id);
+            var message = await _dispatcher.SendCommandAsync<ApproveMessageCommand, Message>(command);
+            return Ok(message);
+        }
+
         [HttpGet("images/{imageId}")]
         [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any)]
         public async Task<IActionResult> GetImage(string imageId, CancellationToken ct)

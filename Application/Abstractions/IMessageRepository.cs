@@ -9,5 +9,6 @@ namespace Application.Abstractions
         Task<IEnumerable<Message>> GetAllMessages();
         Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plate);
         Task<PaidAgreementsResult> PaidAgreementsAsync(List<int> ids);
+        Task<Message> ApproveMessage(int id);
     }
 }

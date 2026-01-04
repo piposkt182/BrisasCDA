@@ -26,11 +26,25 @@ namespace DataAccess.Repository
             return await _dbContext.Messages.Include(p => p.PaymentStatus).ToListAsync();
         }
 
+        public async Task<Message> ApproveMessage(int id)
+        {
+            var message = await _dbContext.Messages.FirstOrDefaultAsync(m => m.Id == id);
+
+            if (message is null)
+                throw new KeyNotFoundException($"Message with id {id} was not found.");
+
+            message.PaymentStatusId = (int)PaymentStatusId.Pending;
+
+            await _dbContext.SaveChangesAsync();
+
+            return message;
+        }
+
         public async Task<IEnumerable<Message>> SetAllMessagesForAgreement(List<string> plates)
         {
             var normalizedPlates = plates.Where(p => !string.IsNullOrWhiteSpace(p)).Select(p => p.ToLower()).ToList();
             var affectedRows = await _dbContext.Messages
-                .Where(m => normalizedPlates.Contains(m.Text!.ToLower()) && m.PaymentStatusId == 1)
+                .Where(m => normalizedPlates.Contains(m.PlateVehicle!.ToLower()) && m.PaymentStatusId == (int)PaymentStatusId.Pending)
                 .ExecuteUpdateAsync(setters =>
                     setters.SetProperty(
                         m => m.PaymentStatusId,

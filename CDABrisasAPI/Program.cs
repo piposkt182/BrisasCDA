@@ -101,6 +101,7 @@ builder.Services.AddScoped<ICommandHandler<CreateMessageCommand, Message>, Creat
 builder.Services.AddScoped<IQueryHandler<GetAllMessagesQuery, IEnumerable<Message>>, GetAllMessagesHandler>();
 builder.Services.AddScoped<ICommandHandler<SendWhatsAppTemplateCommand, string>, SendWhatsAppTemplateHandler>();
 builder.Services.AddTransient<ICommandHandler<PaidAgreementsCommand,PaidAgreementsResult>, PaidAgreementsHandler>();
+builder.Services.AddTransient<ICommandHandler<ApproveMessageCommand, Message>, ApproveMessageHandler>();
 
 // Webhook
 builder.Services.AddScoped<IWhatsAppWebhookParser, WhatsAppWebhookParser>();
