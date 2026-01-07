@@ -111,6 +111,7 @@ namespace Application.Messages.CommandHandler
                 ImageUrl = imageUrl,
                 MimeType = command.mimeType,
                 ImageName = fileName,
+                DateCreated = DateTime.Now
             };
             if (evaluation == VehicleDistanceResult.Far || evaluation == VehicleDistanceResult.Rejected || evaluation ==  VehicleDistanceResult.Close)
             {

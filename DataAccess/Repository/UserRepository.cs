@@ -14,7 +14,33 @@ namespace DataAccess.Repository
 
         public async Task<IEnumerable<User>> GetAllUsersWithMessages()
         {
-            return await _dbContext.Users.Include(m => m.Messages).ThenInclude(s => s.PaymentStatus).ToListAsync();
+            return await _dbContext.Users.AsNoTracking()
+                           .Select(u => new User
+                           {
+                               Id = u.Id,
+                               Name = u.Name,
+                               Ws_Id = u.Ws_Id,
+                               Messages = u.Messages
+                                   .OrderByDescending(m => m.DateCreated)
+                                   .Select(m => new Message
+                                   {
+                                       Id = m.Id,
+                                       UserId = m.UserId,
+                                       Number = m.Number,
+                                       Text = m.Text,
+                                       DateMessage = m.DateMessage,
+                                       ImageUrl = m.ImageUrl,
+                                       MimeType = m.MimeType,
+                                       PaymentStatusId = m.PaymentStatusId,
+                                       ImageName = m.ImageName,
+                                       AgreementId = m.AgreementId,
+                                       PlateVehicle = m.PlateVehicle,
+                                       DateCreated = m.DateCreated,
+
+                                       PaymentStatus = m.PaymentStatus
+                                   })
+                                   .ToList()
+                           }).ToListAsync();
         }
 
         public async Task<User> CreateUser(User user)
