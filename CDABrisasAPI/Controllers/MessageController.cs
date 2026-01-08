@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
+using Application.Messages.CommandHandler;
 using Application.Messages.Commands;
 using Application.Messages.Queries;
 using Application.Users.Queries;
@@ -56,6 +57,14 @@ namespace CDABrisasAPI.Controllers
         {
             var command = new ApproveMessageCommand(id);
             var message = await _dispatcher.SendCommandAsync<ApproveMessageCommand, Message>(command);
+            return Ok(message);
+        }
+
+        [HttpPost("SendGenericWhatsapp")]
+        public async Task<IActionResult> SendGenericWhatsapp([FromHeader(Name = "id")] string id)
+        {
+            var command = new SendGenericWhatsappCommand(id);
+            var message = await _dispatcher.SendCommandAsync<SendGenericWhatsappCommand, bool>(command);
             return Ok(message);
         }
 

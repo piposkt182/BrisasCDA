@@ -54,6 +54,40 @@ namespace Application.Services
             }
         }
 
+        public async Task SendGenericWhatsAppAsync(string id)
+        {
+            var client = _httpClientFactory.CreateClient();
+
+            client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _accessToken);
+
+            var payload = new
+            {
+                messaging_product = "whatsapp",
+                to = "573012282168",
+                type = "text",
+                text = new
+                {
+                    body = $"Hay una persona interesada en comprar y es el numero: {id}"
+                }
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+
+            var response = await client.PostAsync(
+                $"{MetaApiUrl}{_phoneWhatsappId}/messages",
+                new StringContent(json, Encoding.UTF8, "application/json")
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error enviando WhatsApp: {error}");
+            }
+        }
+
+
+
         //private methods
         private string MessageText(VehicleDistanceResult vehicleDistance)
         {

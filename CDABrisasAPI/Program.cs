@@ -102,6 +102,7 @@ builder.Services.AddScoped<IQueryHandler<GetAllMessagesQuery, IEnumerable<Messag
 builder.Services.AddScoped<ICommandHandler<SendWhatsAppTemplateCommand, string>, SendWhatsAppTemplateHandler>();
 builder.Services.AddTransient<ICommandHandler<PaidAgreementsCommand,PaidAgreementsResult>, PaidAgreementsHandler>();
 builder.Services.AddTransient<ICommandHandler<ApproveMessageCommand, Message>, ApproveMessageHandler>();
+builder.Services.AddTransient<ICommandHandler<SendGenericWhatsappCommand, bool>, SendGenericWhatsappHandler>();
 
 // Webhook
 builder.Services.AddScoped<IWhatsAppWebhookParser, WhatsAppWebhookParser>();
@@ -116,6 +117,7 @@ builder.Services.AddScoped<ICommandHandler<SendReferralListCommand, Message>, Se
 builder.Services.AddScoped<ICommandHandler<SetSurveyFieldsToUsersCommand, ManyChatUserResponse>, SetSurveyFieldsToUsersHandler>();
 builder.Services.Configure<ManyChatOptions>(builder.Configuration.GetSection("ManyChat"));
 builder.Services.AddHttpClient<SendWhatsAppTemplateHandler>();
+builder.Services.AddScoped<ICommandHandler<SaveSurveyUserCommand, bool>, SaveSurveyUserHandler>();
 
 //Azure
 builder.Services.AddTransient<IBlobService,BlobService>();

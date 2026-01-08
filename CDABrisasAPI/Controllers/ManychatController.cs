@@ -32,5 +32,13 @@ namespace CDABrisasAPI.Controllers
             }
             return TypedResults.Ok(user);
         }
+
+        [HttpPost("SaveSurveyUser")]
+        public async Task<IResult> SaveSurveyUser([FromHeader(Name = "whatsappnumber")] string whatsappnumber, [FromHeader(Name = "field1")] string field1, [FromHeader(Name = "field2")] string field2, [FromHeader(Name = "field3")] string field3)
+        {
+            var command = new SaveSurveyUserCommand(whatsappnumber, field1, field2, field3);
+            var surveysaved = await _dispatcher.SendCommandAsync<SaveSurveyUserCommand, bool>(command);
+            return TypedResults.Ok(surveysaved);
+        }
     }
 }

@@ -50,6 +50,13 @@ namespace DataAccess.Repository
             return user;
         }
 
+        public async Task<bool> SaveSurveyUser(SurveyResult survey)
+        {
+            _dbContext.SurveyResults.Add(survey);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<User> GetUser(string whatsappNumber)
         {
             return await _dbContext.Users.Where(u => u.Ws_Id == whatsappNumber).FirstOrDefaultAsync();

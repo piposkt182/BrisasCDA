@@ -12,6 +12,7 @@ namespace DataAccess
         public DbSet<SystemUser> SystemUsers { get; set; }
         public DbSet<PaymentStatus> PaymentsStatus { get; set; }
         public DbSet<Agreement> Agreements { get; set; }
+        public DbSet<SurveyResult> SurveyResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,12 @@ namespace DataAccess
                             .WithOne(m => m.User)
                             .HasForeignKey(m => m.UserId)
                             .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SurveyResult>(entity =>
+            {
+                entity.ToTable("SurveyResult");
+                entity.HasKey(u => u.id);
             });
 
             modelBuilder.Entity<Message>(entity =>
