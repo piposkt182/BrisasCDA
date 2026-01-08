@@ -1,6 +1,8 @@
 ﻿using Application.Abstractions.Interfaces.Dispatchers.Interfaz;
 using Application.Manychat.Command;
+using Application.Manychat.Queries;
 using Application.Utilities.Dtos;
+using Domain.Models;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +41,14 @@ namespace CDABrisasAPI.Controllers
             var command = new SaveSurveyUserCommand(whatsappnumber, field1, field2, field3);
             var surveysaved = await _dispatcher.SendCommandAsync<SaveSurveyUserCommand, bool>(command);
             return TypedResults.Ok(surveysaved);
+        }
+
+        [HttpGet("GetSurveyUser")]
+        public async Task<IResult> GetSurveyUser()
+        {
+            var query = new GetSurveyQuery();
+            var surveyList = await _dispatcher.SendQueryAsync<GetSurveyQuery, IEnumerable<SurveyResult>>(query);
+            return TypedResults.Ok(surveyList);
         }
     }
 }

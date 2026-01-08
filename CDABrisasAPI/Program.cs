@@ -7,6 +7,8 @@ using Application.Agreements.Query;
 using Application.Agreements.QueryHandler;
 using Application.Manychat.Command;
 using Application.Manychat.CommandHandler;
+using Application.Manychat.Queries;
+using Application.Manychat.QueryHandler;
 using Application.Messages.CommandHandler;
 using Application.Messages.Commands;
 using Application.Messages.Queries;
@@ -118,6 +120,7 @@ builder.Services.AddScoped<ICommandHandler<SetSurveyFieldsToUsersCommand, ManyCh
 builder.Services.Configure<ManyChatOptions>(builder.Configuration.GetSection("ManyChat"));
 builder.Services.AddHttpClient<SendWhatsAppTemplateHandler>();
 builder.Services.AddScoped<ICommandHandler<SaveSurveyUserCommand, bool>, SaveSurveyUserHandler>();
+builder.Services.AddScoped<IQueryHandler<GetSurveyQuery, IEnumerable<SurveyResult>>, GetSurveyHandler>();
 
 //Azure
 builder.Services.AddTransient<IBlobService,BlobService>();

@@ -56,6 +56,10 @@ namespace DataAccess.Repository
             await _dbContext.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<SurveyResult>> GetSurveyUser()
+        {
+           return await _dbContext.SurveyResults.ToListAsync();
+        }
 
         public async Task<User> GetUser(string whatsappNumber)
         {
